@@ -281,7 +281,7 @@
             const n = Math.max(1, Math.min(100, parseInt(numRecsInput.value) || 3));
 
             const xhr = new XMLHttpRequest();
-            xhr.open('POST', `http://localhost:5000/upload?n=${n}`, true);
+            xhr.open('POST', `https://music-recommendation-th96.onrender.com/upload?n=${n}`, true);
 
             xhr.upload.onprogress = function (e) {
                 if (e.lengthComputable) {
@@ -322,7 +322,7 @@
                             listenBtn.textContent = 'Listen';
                             listenBtn.style.marginTop = '10px';
                             listenBtn.onclick = () => {
-                                audioPlayer.src = `http://localhost:5000/music/${encodeURIComponent(rec.filename)}`;
+                                audioPlayer.src = `https://music-recommendation-th96.onrender.com/music/${encodeURIComponent(rec.filename)}`;
                                 audioPlayer.style.display = 'block';
                                 audioPlayer.play();
                             };
