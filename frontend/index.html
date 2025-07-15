@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Recommendation</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(120deg, #6366f1 0%, #06b6d4 40%, #f59e42 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            background-attachment: fixed;
+            position: relative;
+        }
+        .container {
+            max-width: 420px;
+            margin: 60px auto;
+            background: #fff;
+            padding: 40px 28px 32px 28px;
+            border-radius: 18px;
+            box-shadow: 0 8px 32px rgba(60, 60, 120, 0.12);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 28px;
+            font-weight: 700;
+            color: #2d3a4a;
+            letter-spacing: 1px;
+        }
+        .file-input-wrapper {
+            position: relative;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        input[type="file"] {
+            opacity: 0;
+            width: 100%;
+            height: 48px;
+            position: absolute;
+            left: 0;
+            top: 0;
+            cursor: pointer;
+        }
+        .custom-file-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f1f5f9;
+            border: 2px dashed #a5b4fc;
+            color: #6366f1;
+            border-radius: 8px;
+            height: 48px;
+            font-size: 16px;
+            transition: border 0.2s;
+            cursor: pointer;
+        }
+        .custom-file-label.selected {
+            border: 2px solid #6366f1;
+            background: #e0e7ff;
+        }
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(90deg, #6366f1 0%, #06b6d4 100%);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(99,102,241,0.08);
+            margin-bottom: 8px;
+            transition: background 0.2s, transform 0.1s;
+        }
+        button:disabled {
+            background: #a5b4fc;
+            cursor: not-allowed;
+        }
+        .progress-bar-container {
+            width: 100%;
+            height: 12px;
+            background: #e0e7ff;
+            border-radius: 6px;
+            margin-bottom: 18px;
+            overflow: hidden;
+            display: none;
+        }
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #6366f1 0%, #06b6d4 100%);
+            border-radius: 6px;
+            transition: width 0.2s;
+        }
+        .results {
+            margin-top: 36px;
+            width: 100%;
+        }
+        .recommendation {
+            background: linear-gradient(90deg, #f0fdfa 0%, #e0e7ff 100%);
+            margin-bottom: 16px;
+            padding: 16px 18px;
+            border-radius: 8px;
+            font-size: 16px;
+            color: #2d3a4a;
+            box-shadow: 0 2px 8px rgba(99,102,241,0.06);
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.5s forwards;
+        }
+        .recommendation:nth-child(1) { animation-delay: 0.05s; }
+        .recommendation:nth-child(2) { animation-delay: 0.15s; }
+        .recommendation:nth-child(3) { animation-delay: 0.25s; }
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: none;
+            }
+        }
+        .error {
+            color: #c00;
+            text-align: center;
+            margin-top: 16px;
+            font-weight: 500;
+        }
+        .music-banner {
+            width: 100%;
+            background: linear-gradient(120deg, #6366f1 0%, #06b6d4 40%, #f59e42 100%);
+            color: #fff;
+            padding: 36px 0 24px 0;
+            text-align: center;
+            position: relative;
+        }
+        .music-notes {
+            display: block;
+            margin: 0 auto 8px auto;
+        }
+        .banner-title {
+            font-size: 2.1rem;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            margin-bottom: 6px;
+            text-shadow: 0 2px 8px rgba(60,60,120,0.10);
+        }
+        .banner-desc {
+            font-size: 1.1rem;
+            font-weight: 400;
+            opacity: 0.95;
+            margin-bottom: 0;
+        }
+        .processing-spinner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 18px;
+            margin-top: 8px;
+        }
+        .spinner {
+            border: 4px solid #e0e7ff;
+            border-top: 4px solid #6366f1;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 8px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .processing-text {
+            color: #6366f1;
+            font-size: 1.1rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        @media (max-width: 600px) {
+            .container {
+                max-width: 98vw;
+                padding: 18vw 2vw 10vw 2vw;
+                margin: 24px 0;
+            }
+            .results {
+                margin-top: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div style="display: flex; flex-direction: column; align-items: center; margin-top: 48px; margin-bottom: 24px;">
+        <svg width="120" height="48" viewBox="0 0 120 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <g>
+                <path d="M10 40 Q12 30 20 32 T30 40" stroke="#6366f1" stroke-width="2" fill="none"/>
+                <ellipse cx="10" cy="40" rx="3" ry="2" fill="#6366f1"/>
+                <ellipse cx="30" cy="40" rx="3" ry="2" fill="#6366f1"/>
+                <path d="M60 20 Q62 10 70 12 T80 20" stroke="#06b6d4" stroke-width="2" fill="none"/>
+                <ellipse cx="60" cy="20" rx="3" ry="2" fill="#06b6d4"/>
+                <ellipse cx="80" cy="20" rx="3" ry="2" fill="#06b6d4"/>
+                <path d="M100 35 Q102 25 110 27 T120 35" stroke="#f59e42" stroke-width="2" fill="none"/>
+                <ellipse cx="100" cy="35" rx="3" ry="2" fill="#f59e42"/>
+                <ellipse cx="120" cy="35" rx="3" ry="2" fill="#f59e42"/>
+            </g>
+        </svg>
+        <div style="font-size:2.1rem;font-weight:800;letter-spacing:1.5px;color:#fff;text-align:center;text-shadow:0 2px 8px rgba(60,60,120,0.10);margin-top:10px;">🎵 Music Recommendation System 🎶</div>
+        <div style="font-size:1.1rem;font-weight:400;opacity:0.95;color:#fff;text-align:center;margin-top:6px;">Find your next favorite song with the power of AI!</div>
+    </div>
+    <div class="container">
+        <div id="processingSpinner" class="processing-spinner" style="display:none;">
+            <div class="spinner"></div>
+            <div class="processing-text">Processing...</div>
+        </div>
+        <h2>Music Recommendation</h2>
+        <div style="background:linear-gradient(90deg,#e0e7ff 0%,#f0fdfa 100%);color:#444;padding:14px 18px;border-radius:10px;margin-bottom:22px;font-size:15px;text-align:center;box-shadow:0 1px 6px rgba(99,102,241,0.06);">
+            <strong>Discover music that matches your vibe!</strong><br>
+            <span style="font-size:14px;">Upload a song, pick how many recommendations you want, and get instant music suggestions.</span>
+            <ol style="text-align:left;max-width:340px;margin:12px auto 0 auto;padding-left:18px;font-size:14px;">
+                <li>Choose an audio file</li>
+                <li>Select number of results</li>
+                <li>Click <b>Upload & Get Recommendations</b></li>
+            </ol>
+        </div>
+        <div class="file-input-wrapper">
+            <label class="custom-file-label" id="fileLabel">Choose an audio file…</label>
+            <input type="file" id="audioFile" accept="audio/*">
+        </div>
+        <div style="width:100%;margin-bottom:16px;display:flex;align-items:center;gap:10px;">
+            <label for="numRecs" style="font-size:15px;color:#6366f1;">Number of recommendations:</label>
+            <input type="number" id="numRecs" min="1" max="100" value="3" style="width:60px;padding:6px 4px;border-radius:6px;border:1px solid #a5b4fc;font-size:15px;">
+        </div>
+        <button id="uploadBtn">Upload & Get Recommendations</button>
+        <div class="progress-bar-container" id="progressContainer">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div class="error" id="errorMsg"></div>
+        <div class="results" id="results"></div>
+    </div>
+    <footer style="text-align:center; margin-top:40px; color:#888; font-size:13px; letter-spacing:0.5px; background:rgba(255,255,255,0.85); z-index:10; position:relative; padding:12px 0 8px 0; border-top:1px solid #e0e7ff;">
+        &copy; 2025 Maël Korchef, Joris Brierre, Kimya Cairo-Bidias
+    </footer>
+    <script>
+        const uploadBtn = document.getElementById('uploadBtn');
+        const audioFile = document.getElementById('audioFile');
+        const resultsDiv = document.getElementById('results');
+        const errorMsg = document.getElementById('errorMsg');
+        const fileLabel = document.getElementById('fileLabel');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const numRecsInput = document.getElementById('numRecs');
+        const processingSpinner = document.getElementById('processingSpinner');
+
+        audioFile.onchange = () => {
+            if (audioFile.files.length) {
+                fileLabel.textContent = audioFile.files[0].name;
+                fileLabel.classList.add('selected');
+            } else {
+                fileLabel.textContent = 'Choose an audio file…';
+                fileLabel.classList.remove('selected');
+            }
+        };
+
+        uploadBtn.onclick = async () => {
+            errorMsg.textContent = '';
+            resultsDiv.innerHTML = '';
+            if (!audioFile.files.length) {
+                errorMsg.textContent = 'Please select an audio file.';
+                return;
+            }
+            uploadBtn.disabled = true;
+            progressBar.style.width = '0%';
+            progressContainer.style.display = 'block';
+            processingSpinner.style.display = 'flex';
+            const formData = new FormData();
+            formData.append('file', audioFile.files[0]);
+
+            const n = Math.max(1, Math.min(100, parseInt(numRecsInput.value) || 3));
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', `http://localhost:5000/upload?n=${n}`, true);
+
+            xhr.upload.onprogress = function (e) {
+                if (e.lengthComputable) {
+                    const percent = (e.loaded / e.total) * 100;
+                    progressBar.style.width = percent + '%';
+                }
+            };
+
+            xhr.onload = function () {
+                uploadBtn.disabled = false;
+                progressBar.style.width = '100%';
+                setTimeout(() => {
+                    progressContainer.style.display = 'none';
+                    progressBar.style.width = '0%';
+                }, 600);
+                processingSpinner.style.display = 'none';
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    let data;
+                    try {
+                        data = JSON.parse(xhr.responseText);
+                    } catch (err) {
+                        errorMsg.textContent = 'Invalid server response.';
+                        return;
+                    }
+                    if (data.recommendations && data.recommendations.length) {
+                        let audioPlayer = document.createElement('audio');
+                        audioPlayer.controls = true;
+                        audioPlayer.style.display = 'none';
+                        audioPlayer.id = 'audioPlayer';
+                        resultsDiv.appendChild(audioPlayer);
+                        data.recommendations.forEach((rec, idx) => {
+                            const div = document.createElement('div');
+                            div.className = 'recommendation';
+                            const percent = rec.percent !== undefined ? rec.percent : Math.round(((rec.similarity || 0) + 1) / 2 * 100);
+                            div.innerHTML = `<strong>${rec.artist} - ${rec.title}</strong><br><span style="font-size:14px;color:#6366f1;">This music has ${percent}% chance to correspond to your taste</span>`;
+                            // Add Listen button
+                            const listenBtn = document.createElement('button');
+                            listenBtn.textContent = 'Listen';
+                            listenBtn.style.marginTop = '10px';
+                            listenBtn.onclick = () => {
+                                audioPlayer.src = `http://localhost:5000/music/${encodeURIComponent(rec.filename)}`;
+                                audioPlayer.style.display = 'block';
+                                audioPlayer.play();
+                            };
+                            div.appendChild(document.createElement('br'));
+                            div.appendChild(listenBtn);
+                            resultsDiv.appendChild(div);
+                        });
+                    } else {
+                        resultsDiv.textContent = 'No recommendations found.';
+                    }
+                } else {
+                    let data;
+                    try {
+                        data = JSON.parse(xhr.responseText);
+                    } catch (err) {
+                        errorMsg.textContent = 'Upload failed.';
+                        return;
+                    }
+                    errorMsg.textContent = data.error || 'Upload failed.';
+                }
+            };
+
+            xhr.onerror = function () {
+                uploadBtn.disabled = false;
+                progressContainer.style.display = 'none';
+                progressBar.style.width = '0%';
+                processingSpinner.style.display = 'none';
+                errorMsg.textContent = 'Network error.';
+            };
+
+            xhr.send(formData);
+        };
+    </script>
+</body>
+</html> 
