@@ -84,6 +84,12 @@ def upload_file():
     file = request.files['file']
     if not file or file.filename == '':
         return jsonify({'error': 'No selected file'}), 400
+    # Check file size (must be < 30MB)
+    file.seek(0, os.SEEK_END)
+    file_length = file.tell()
+    file.seek(0)
+    if file_length > 30 * 1024 * 1024:
+        return jsonify({'error': 'File too large. Please upload a file smaller than 30MB.'}), 400
     filename = secure_filename(file.filename) if file.filename else 'audio.wav'
     filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     file.save(filepath)

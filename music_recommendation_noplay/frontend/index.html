@@ -256,11 +256,21 @@
 
         audioFile.onchange = () => {
             if (audioFile.files.length) {
-                fileLabel.textContent = audioFile.files[0].name;
+                const file = audioFile.files[0];
+                if (file.size > 30 * 1024 * 1024) {
+                    errorMsg.textContent = 'File too large. Please select a file smaller than 30MB.';
+                    fileLabel.textContent = 'Choose an audio file…';
+                    fileLabel.classList.remove('selected');
+                    audioFile.value = '';
+                    return;
+                }
+                fileLabel.textContent = file.name;
                 fileLabel.classList.add('selected');
+                errorMsg.textContent = '';
             } else {
                 fileLabel.textContent = 'Choose an audio file…';
                 fileLabel.classList.remove('selected');
+                errorMsg.textContent = '';
             }
         };
 
