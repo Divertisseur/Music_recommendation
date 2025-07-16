@@ -142,7 +142,8 @@ def upload_file():
 
 @app.route('/music/<path:filename>')
 def serve_music(filename):
-    return send_from_directory('music_db', filename)
+    # Serve from absolute path
+    return send_from_directory(r'C:\Users\MaelK\Documents\Projets_Python\music_db', filename)
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
