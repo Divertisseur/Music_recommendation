@@ -1,0 +1,8 @@
+flask
+librosa
+numpy
+scipy
+torch
+torchvggish
+faiss-cpu 
+flask-cors 
